@@ -119,6 +119,8 @@ func main() {
 	c.Flags = append(c.Flags, toolkit.Flags(&options.toolkitOptions)...)
 	c.Flags = append(c.Flags, runtime.Flags(&options.runtimeOptions)...)
 
+	log.Infof("Tariq debug: %v", options)
+
 	// Run the CLI
 	log.Infof("Starting %v", c.Name)
 	if err := c.Run(remainingArgs); err != nil {
@@ -144,6 +146,7 @@ func validateFlags(_ *cli.Context, o *options) error {
 
 // Run runs the core logic of the CLI
 func Run(c *cli.Context, o *options) error {
+	log.Infof("Tariq debug 2: %v", o)
 	err := verifyFlags(o)
 	if err != nil {
 		return fmt.Errorf("unable to verify flags: %v", err)
