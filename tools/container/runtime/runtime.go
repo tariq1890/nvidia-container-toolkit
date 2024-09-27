@@ -23,6 +23,7 @@ import (
 
 	"github.com/NVIDIA/nvidia-container-toolkit/tools/container"
 	"github.com/NVIDIA/nvidia-container-toolkit/tools/container/runtime/containerd"
+	"github.com/NVIDIA/nvidia-container-toolkit/tools/container/runtime/crio"
 	"github.com/NVIDIA/nvidia-container-toolkit/tools/container/runtime/docker"
 )
 
@@ -39,6 +40,7 @@ type Options struct {
 	container.Options
 
 	containerdOptions containerd.Options
+	crioOptions       crio.Options
 }
 
 func Flags(opts *Options) []cli.Flag {
@@ -90,6 +92,7 @@ func Flags(opts *Options) []cli.Flag {
 	}
 
 	flags = append(flags, containerd.Flags(&opts.containerdOptions)...)
+	flags = append(flags, crio.Flags(&opts.crioOptions)...)
 
 	return flags
 }
@@ -110,6 +113,16 @@ func ValidateOptions(opts *Options, runtime string, toolkitRoot string) error {
 		}
 		if opts.RestartMode == runtimeSpecificDefault {
 			opts.RestartMode = containerd.DefaultRestartMode
+		}
+	case "crio":
+		if opts.Config == "DEFAULT" {
+			opts.Config = crio.DefaultConfig
+		}
+		if opts.Socket == "DEFAULT" {
+			opts.Socket = crio.DefaultSocket
+		}
+		if opts.RestartMode == "DEFAULT" {
+			opts.RestartMode = crio.DefaultRestartMode
 		}
 	case "docker":
 		if opts.Config == runtimeSpecificDefault {
@@ -132,6 +145,8 @@ func Setup(c *cli.Context, opts *Options, runtime string) error {
 	switch runtime {
 	case "containerd":
 		return containerd.Setup(c, &opts.Options, &opts.containerdOptions)
+	case "crio":
+		return crio.Setup(c, &opts.Options, &opts.crioOptions)
 	case "docker":
 		return docker.Setup(c, &opts.Options)
 	default:
@@ -143,6 +158,8 @@ func Cleanup(c *cli.Context, opts *Options, runtime string) error {
 	switch runtime {
 	case "containerd":
 		return containerd.Cleanup(c, &opts.Options, &opts.containerdOptions)
+	case "crio":
+		return crio.Cleanup(c, &opts.Options, &opts.crioOptions)
 	case "docker":
 		return docker.Cleanup(c, &opts.Options)
 	default:
